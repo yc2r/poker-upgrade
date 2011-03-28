@@ -5,7 +5,7 @@
 
 * Creation Date :
 
-* Last Modified : Mon 28 Mar 2011 12:12:37 PM EDT
+* Last Modified : Mon 28 Mar 2011 05:36:07 PM EDT
 
 * Created By :
 
@@ -137,10 +137,18 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	int win = 0;				//simulated number of wins
 	int lose = 0;				//simulated number of loses
 	int tie = 0;				//simulated number of ties
-	int maxNumberOfCards = 7;	//number of all cards
+	int maxNumberOfCards = 0;	//number of all cards
 	int handValue = -1;			//computing the current best 5 out of 7 and its rank
 	int oppoValue = -1;
 	float IHS = 0;				//Immediate Hand Strength
+	int potTotal = 0;
+	int betToCall = 0;
+	for (i = 0; i < 3; i++)		//3 is the number of total players.
+	{
+		potTotal += state->spent[i];
+		betToCall = (state->spent[i]>betToCall)?state->spent[i]:betToCall;		//get the max spent.
+	}
+	betToCall -= state->spent[currentPlayer];		//get the chips required to call, could equal to zero.
 	Card *myCards = (Card *) (malloc(sizeof(Card)*maxNumberOfCards));		//counting post-flop maximum
 	Card *oppoCards = (Card *) (malloc(sizeof(Card)*maxNumberOfCards));		//counting post-flop maximum
 	for (i = 0; i < 2; i++)
@@ -171,9 +179,9 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	}
 	else							//post-flop
 	{
-		
+		maxNumberOfCards = 4 + state->round;		//total number of used cards (for opponent hole cards enumeration)
 		//Assign the community cards to respective slots
-		for (i = 0; i < 5; i++)
+		for (i = 0; i < 2 + state->round; i++)
 		{
 			myCards[i+2].rank = rankOfCard(state->boardCards[i]);
 			myCards[i+2].suite = suitOfCard(state->boardCards[i]);
@@ -181,7 +189,7 @@ Strength computeHandStrength(State *state, int currentPlayer)
 			oppoCards[i+2].suite = suitOfCard(state->boardCards[i]);
 		}
 		//what's my current rank?
-		handValue = rankMyHand(myCards, 7);
+		handValue = rankMyHand(myCards, maxNumberOfCards);
 		
 		//traverse through all possible opponent hands:
 		for (i = 0; i < 13; i++){
@@ -201,7 +209,7 @@ Strength computeHandStrength(State *state, int currentPlayer)
 						oppoCards[1].rank = k;
 						oppoCards[1].suite = l;
 						//by the end of this loop we simulated the opponent cards.
-						oppoValue = rankMyHand(oppoCards, 7);
+						oppoValue = rankMyHand(oppoCards, maxNumberOfCards);
 						if (oppoValue > handValue) lose++;
 						else if (oppoValue < handValue) win++;
 						else tie++;
@@ -216,6 +224,8 @@ Strength computeHandStrength(State *state, int currentPlayer)
 		else if (IHS > 0.3) bucket = 2;
 		else bucket = 1;
 	}
+	//bucket indicates the current hand strength.
+
 	/*if (state->round>0)
 	{
 		fprintf(fp,"This is from player %d:, betting round %d.\n", currentPlayer, state->round);
@@ -242,9 +252,29 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	}
 	fprintf(fp, "--------------------------------\n");
 	fclose(fp);*/
+	//Now we use heuristics to compute potentials
+	if (state->round == 1)		//flop
+	{
+
+	}
+	else if (state->round == 2)		//turn
+	{
+
+	}
+	//we don't care about pre-flop and river.
+	//done computing potentials
 	Strength returnStrength;
 	returnStrength.bucket = bucket;
-	returnStrength.potOdds = 0.1;
+	if (potTotal!=0)
+	{
+		returnStrength.potOdds = betToCall/potTotal;
+	}
+	else
+	{
+		printf("error! pot size = 0, cannot get potOdds");
+		exit(0);
+	}
+	returnStrength.potential = 1;
 	return returnStrength;
 }
 

@@ -5,7 +5,7 @@
 
 * Creation Date :
 
-* Last Modified : Mon 28 Mar 2011 12:14:56 PM EDT
+* Last Modified : Mon 28 Mar 2011 02:47:42 PM EDT
 
 * Created By : Yuchen Zhou
 
@@ -29,8 +29,9 @@ typedef struct{
 } Card;
 
 typedef struct{
-	float potOdds;			//pot odds: (the number of chips I need to put in the pot/total number of chips in the pot)/winning probability
-	int bucket;				//five bucket abstractions, return value from 1 to 5, with 1 being the worst hand.
+	float potOdds;			//pot odds: (the number of chips I need to put in the pot/total number of chips in the pot)/winning probability.
+	int bucket;				//five current hand strength bucket abstractions, return value from 1 to 5, with 1 being the worst hand.
+	int potential;			//five potential bucket abstractions, -2 to +2, -2 being the worst.
 } Strength;
 
 int rankHand(Card* myCards, int numberOfCards);
