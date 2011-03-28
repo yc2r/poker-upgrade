@@ -5,7 +5,7 @@
 
 * Creation Date :
 
-* Last Modified : Wed 02 Mar 2011 05:04:28 PM EST
+* Last Modified : Mon 28 Mar 2011 12:14:56 PM EDT
 
 * Created By : Yuchen Zhou
 
@@ -28,9 +28,13 @@ typedef struct{
 	enum SUITE suite;
 } Card;
 
+typedef struct{
+	float potOdds;			//pot odds: (the number of chips I need to put in the pot/total number of chips in the pot)/winning probability
+	int bucket;				//five bucket abstractions, return value from 1 to 5, with 1 being the worst hand.
+} Strength;
 
 int rankHand(Card* myCards, int numberOfCards);
 		     
-int computeHandStrength(State *state, int currentPlayer);
+Strength computeHandStrength(State *state, int currentPlayer);
 
 #endif

@@ -5,7 +5,7 @@
 
 * Creation Date :
 
-* Last Modified : Tue 08 Mar 2011 08:43:57 PM EST
+* Last Modified : Mon 28 Mar 2011 12:12:37 PM EDT
 
 * Created By :
 
@@ -127,7 +127,7 @@ static int isCardChoiceLegal(int rank, int suite, Card* myCards, int maxNumberOf
 	return 0;
 }
 
-int computeHandStrength(State *state, int currentPlayer)
+Strength computeHandStrength(State *state, int currentPlayer)
 {
 	unsigned bucket = 0;				//final return value
 	int i = 0;					//loop vars
@@ -242,6 +242,9 @@ int computeHandStrength(State *state, int currentPlayer)
 	}
 	fprintf(fp, "--------------------------------\n");
 	fclose(fp);*/
-	return bucket;
+	Strength returnStrength;
+	returnStrength.bucket = bucket;
+	returnStrength.potOdds = 0.1;
+	return returnStrength;
 }
 
