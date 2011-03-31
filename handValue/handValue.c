@@ -5,7 +5,7 @@
 
 * Creation Date :
 
-* Last Modified : Thu 31 Mar 2011 11:15:09 AM EDT
+* Last Modified : Thu 31 Mar 2011 12:10:56 PM EDT
 
 * Created By :
 
@@ -285,6 +285,18 @@ Strength computeHandStrength(State *state, int currentPlayer)
 		fprintf(fp,"Post-flop hand strength is: %f\n\n", bucket);
 	}
 	fclose(fp);*/
+	Strength returnStrength;
+	returnStrength.bucket = bucket;
+	if (potTotal!=0)
+	{
+		returnStrength.potOdds = ((float)betToCall)/potTotal;
+	}
+	else
+	{
+		printf("error! pot size = 0, cannot get potOdds");
+		exit(0);
+	}
+	returnStrength.potential = pPot;
 	FILE *fp;
 	fp = fopen("output.txt","a+");
 	fprintf(fp,"This is from player %d:, betting round %d.\n", currentPlayer, state->round);
@@ -305,22 +317,12 @@ Strength computeHandStrength(State *state, int currentPlayer)
 		fprintf(fp,"Post-flop hand potential is %f\n", pPot);
 		fprintf(fp,"Post-flop EHS is %f\n", EHS);
 		fprintf(fp,"Post-flop IHS is %f\n", IHS);
+		fprintf(fp,"betToCall is %d\n", betToCall);
+		fprintf(fp,"potTotal is %d\n", potTotal);
 	}
 	fprintf(fp, "--------------------------------\n");
 	fclose(fp);
 	//Now we use heuristics to compute potentials
-	Strength returnStrength;
-	returnStrength.bucket = bucket;
-	if (potTotal!=0)
-	{
-		returnStrength.potOdds = betToCall/potTotal;
-	}
-	else
-	{
-		printf("error! pot size = 0, cannot get potOdds");
-		exit(0);
-	}
-	returnStrength.potential = pPot;
 	return returnStrength;
 }
 
