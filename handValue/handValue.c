@@ -5,7 +5,7 @@
 
 * Creation Date :
 
-* Last Modified : Thu 31 Mar 2011 12:46:59 AM EDT
+* Last Modified : Thu 31 Mar 2011 01:16:17 AM EDT
 
 * Created By :
 
@@ -145,6 +145,8 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	int maxNumberOfCards = 0;	//number of all cards
 	int handValue = -1;			//computing the current best 5 out of 7 and its rank
 	int oppoValue = -1;
+	int handValueP = -1;		//used to compute potentials
+	int oppoValueP = -1;		
 	int remainingCards = 48 - state->round - 2;
 	float IHS = 0.0;				//Immediate Hand Strength
 	float EHS = 0.0;
@@ -247,10 +249,11 @@ Strength computeHandStrength(State *state, int currentPlayer)
 									oppoCards[4 + state->round].rank = m;
 									oppoCards[4 + state->round].suite = n;
 									//by the end of this loop we simulated the opponent cards.
-									oppoValue = rankMyHand(oppoCards, maxNumberOfCards+1);
-									if (oppoValue < handValue && previousWinning == -1) lose2win++;
-									if (oppoValue < handValue && previousWinning == 0) tie2win++;
-									if (oppoValue == handValue && previousWinning == -1) lose2tie++;
+									handValueP = rankMyHand(myCards, maxNumberOfCards+1);
+									oppoValueP = rankMyHand(oppoCards, maxNumberOfCards+1);
+									if (oppoValueP < handValueP && previousWinning == -1) lose2win++;
+									if (oppoValueP < handValueP && previousWinning == 0) tie2win++;
+									if (oppoValueP == handValueP && previousWinning == -1) lose2tie++;
 									//if our bot played too many hands, we will consider adding negative potentials.
 								}
 							}
@@ -298,6 +301,7 @@ Strength computeHandStrength(State *state, int currentPlayer)
 		if (state->round == 3) fprintf(fp, "%d", rankOfCard(state->boardCards[4]));
 		fprintf(fp, "\n");
 		fprintf(fp,"Post-flop hand strength is: %d\n", bucket);
+		fprintf(fp,"Post-flop lose2win is: %d\n", lose2win);
 		fprintf(fp,"Post-flop hand potential is %f\n", pPot);
 		fprintf(fp,"Post-flop EHS is %f\n", EHS);
 		fprintf(fp,"Post-flop IHS is %f\n", IHS);
