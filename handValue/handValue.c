@@ -5,7 +5,7 @@
 
 * Creation Date :
 
-* Last Modified : Mon 28 Mar 2011 05:36:07 PM EDT
+* Last Modified : Wed 30 Mar 2011 11:59:09 PM EDT
 
 * Created By :
 
@@ -134,13 +134,21 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	int j = 0;
 	int k = 0;
 	int l = 0;
+	int m = 0;
+	int n = 0;
 	int win = 0;				//simulated number of wins
 	int lose = 0;				//simulated number of loses
 	int tie = 0;				//simulated number of ties
+	int tie2win = 0;				//potential tie to wins
+	int lose2win = 0;				//potential lose to wins
+	int lose2tie = 0;				//potential lose to ties
 	int maxNumberOfCards = 0;	//number of all cards
 	int handValue = -1;			//computing the current best 5 out of 7 and its rank
 	int oppoValue = -1;
-	float IHS = 0;				//Immediate Hand Strength
+	int remainingCards = 48 - state->round - 2;
+	float IHS = 0.0;				//Immediate Hand Strength
+	float EHS = 0.0;
+	float pPot = 0.0;
 	int potTotal = 0;
 	int betToCall = 0;
 	for (i = 0; i < 3; i++)		//3 is the number of total players.
@@ -149,8 +157,8 @@ Strength computeHandStrength(State *state, int currentPlayer)
 		betToCall = (state->spent[i]>betToCall)?state->spent[i]:betToCall;		//get the max spent.
 	}
 	betToCall -= state->spent[currentPlayer];		//get the chips required to call, could equal to zero.
-	Card *myCards = (Card *) (malloc(sizeof(Card)*maxNumberOfCards));		//counting post-flop maximum
-	Card *oppoCards = (Card *) (malloc(sizeof(Card)*maxNumberOfCards));		//counting post-flop maximum
+	Card *myCards = (Card *) (malloc(sizeof(Card)*7));		//counting post-flop maximum
+	Card *oppoCards = (Card *) (malloc(sizeof(Card)*7));		//counting post-flop maximum
 	for (i = 0; i < 2; i++)
 	{
 		myCards[i].rank = rankOfCard(state->holeCards[currentPlayer][i]);
@@ -188,6 +196,7 @@ Strength computeHandStrength(State *state, int currentPlayer)
 			oppoCards[i+2].rank = rankOfCard(state->boardCards[i]);
 			oppoCards[i+2].suite = suitOfCard(state->boardCards[i]);
 		}
+		int previousWinning = 0;
 		//what's my current rank?
 		handValue = rankMyHand(myCards, maxNumberOfCards);
 		
@@ -210,18 +219,53 @@ Strength computeHandStrength(State *state, int currentPlayer)
 						oppoCards[1].suite = l;
 						//by the end of this loop we simulated the opponent cards.
 						oppoValue = rankMyHand(oppoCards, maxNumberOfCards);
-						if (oppoValue > handValue) lose++;
-						else if (oppoValue < handValue) win++;
-						else tie++;
+						if (oppoValue > handValue) 
+						{
+							lose++;
+							previousWinning = -1;
+						}
+						else if (oppoValue < handValue) 
+						{
+							win++;
+							previousWinning = 1;
+						}
+						else 
+						{
+							tie++;
+							previousWinning = 0;
+						}
+						//done computing IHS, now compute pPot.
+						if (state->round == 1||state->round == 2)		//flop or river. we need to compute potentials
+						{
+							for (m = 0; m < 13; m++){
+								for (n = 0; n < 4; n++){
+									if (isCardChoiceLegal(m,n,myCards,maxNumberOfCards)) continue;
+									if ((m==i)&&(n==j)) continue;				//Community cards cannot be the same cards as opponent's hole cards!
+									if ((m==k)&&(n==l)) continue;				//same as above!
+									myCards[4 + state->round].rank = m;
+									myCards[4 + state->round].suite = n;
+									oppoCards[4 + state->round].rank = m;
+									oppoCards[4 + state->round].suite = n;
+									//by the end of this loop we simulated the opponent cards.
+									oppoValue = rankMyHand(oppoCards, maxNumberOfCards+1);
+									if (oppoValue < handValue && previousWinning == -1) lose2win++;
+									if (oppoValue < handValue && previousWinning == 0) tie2win++;
+									if (oppoValue == handValue && previousWinning == -1) lose2tie++;
+									//if our bot played too many hands, we will consider adding negative potentials.
+								}
+							}
+						}
 					}
 				}
 			}
 		}
+		pPot = (lose2win/lose)/remainingCards + ((lose2tie/lose)/remainingCards)/2 + ((tie2win/tie)/remainingCards)/2;
 		IHS = (float)(win + (tie/2)) / (float)(win + tie + lose);
-		if (IHS > 0.87) bucket = 5;
-		else if (IHS > 0.72) bucket = 4;
-		else if (IHS > 0.53) bucket = 3;
-		else if (IHS > 0.3) bucket = 2;
+		EHS = IHS + (1 - IHS) * pPot;
+		if (EHS > 0.89) bucket = 5;
+		else if (EHS > 0.75) bucket = 4;
+		else if (EHS > 0.58) bucket = 3;
+		else if (EHS > 0.38) bucket = 2;
 		else bucket = 1;
 	}
 	//bucket indicates the current hand strength.
@@ -253,16 +297,6 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	fprintf(fp, "--------------------------------\n");
 	fclose(fp);*/
 	//Now we use heuristics to compute potentials
-	if (state->round == 1)		//flop
-	{
-
-	}
-	else if (state->round == 2)		//turn
-	{
-
-	}
-	//we don't care about pre-flop and river.
-	//done computing potentials
 	Strength returnStrength;
 	returnStrength.bucket = bucket;
 	if (potTotal!=0)
@@ -274,7 +308,7 @@ Strength computeHandStrength(State *state, int currentPlayer)
 		printf("error! pot size = 0, cannot get potOdds");
 		exit(0);
 	}
-	returnStrength.potential = 1;
+	returnStrength.potential = pPot;
 	return returnStrength;
 }
 
