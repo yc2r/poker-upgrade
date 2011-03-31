@@ -1,6 +1,6 @@
 CC = gcc
 #CFLAGS = -DDEBUG  -DNODEPAR -g  -Wall
-CFLAGS = -O3 -Wall -g
+CFLAGS = -Wall -g
 
 #all:	dealer example_player my_player
 #improved_player

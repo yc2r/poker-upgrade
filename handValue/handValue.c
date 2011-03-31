@@ -5,7 +5,7 @@
 
 * Creation Date :
 
-* Last Modified : Thu 31 Mar 2011 01:16:17 AM EDT
+* Last Modified : Thu 31 Mar 2011 11:15:09 AM EDT
 
 * Created By :
 
@@ -263,9 +263,9 @@ Strength computeHandStrength(State *state, int currentPlayer)
 			}
 		}
 		if (lose!=0)
-		pPot = (lose2win/lose)/remainingCards + ((lose2tie/lose)/remainingCards)/2;
+		pPot = ((float)lose2win/lose)/remainingCards + (((float)lose2tie/lose)/remainingCards)/2;
 		if (tie!=0) 
-		pPot += ((tie2win/tie)/remainingCards)/2;
+		pPot += (((float)tie2win/tie)/remainingCards)/2;
 		IHS = (float)(win + (tie/2)) / (float)(win + tie + lose);
 		EHS = IHS + (1 - IHS) * pPot;
 		if (EHS > 0.89) bucket = 5;
@@ -296,9 +296,9 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	
 	if (state->round > 0)
 	{
-		fprintf(fp, "community cards are: %d, %d, %d, ", rankOfCard(state->boardCards[0]), rankOfCard(state->boardCards[1]), rankOfCard(state->boardCards[2]));
-		if (state->round == 2) fprintf(fp, "%d, ", rankOfCard(state->boardCards[3]));
-		if (state->round == 3) fprintf(fp, "%d", rankOfCard(state->boardCards[4]));
+		fprintf(fp, "community cards are: %d of %d, %d of %d, %d of %d", rankOfCard(state->boardCards[0]), suitOfCard(state->boardCards[0]), rankOfCard(state->boardCards[1]), suitOfCard(state->boardCards[1]), rankOfCard(state->boardCards[2]), suitOfCard(state->boardCards[2]));
+		if (state->round == 2) fprintf(fp, ", %d of %d", rankOfCard(state->boardCards[3]), suitOfCard(state->boardCards[3]));
+		if (state->round == 3) fprintf(fp, ", %d of %d", rankOfCard(state->boardCards[4]), suitOfCard(state->boardCards[4]));
 		fprintf(fp, "\n");
 		fprintf(fp,"Post-flop hand strength is: %d\n", bucket);
 		fprintf(fp,"Post-flop lose2win is: %d\n", lose2win);
