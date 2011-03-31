@@ -5,7 +5,7 @@
 
 * Creation Date :
 
-* Last Modified : Wed 30 Mar 2011 11:59:09 PM EDT
+* Last Modified : Thu 31 Mar 2011 12:46:59 AM EDT
 
 * Created By :
 
@@ -259,7 +259,10 @@ Strength computeHandStrength(State *state, int currentPlayer)
 				}
 			}
 		}
-		pPot = (lose2win/lose)/remainingCards + ((lose2tie/lose)/remainingCards)/2 + ((tie2win/tie)/remainingCards)/2;
+		if (lose!=0)
+		pPot = (lose2win/lose)/remainingCards + ((lose2tie/lose)/remainingCards)/2;
+		if (tie!=0) 
+		pPot += ((tie2win/tie)/remainingCards)/2;
 		IHS = (float)(win + (tie/2)) / (float)(win + tie + lose);
 		EHS = IHS + (1 - IHS) * pPot;
 		if (EHS > 0.89) bucket = 5;
@@ -278,9 +281,7 @@ Strength computeHandStrength(State *state, int currentPlayer)
 		fprintf(fp, "suits are: %d, %d, %d, %d, %d\n", suitOfCard(state->boardCards[0]),suitOfCard(state->boardCards[1]),suitOfCard(state->boardCards[2]),suitOfCard(state->boardCards[3]),suitOfCard(state->boardCards[4]));
 		fprintf(fp,"Post-flop hand strength is: %f\n\n", bucket);
 	}
-	fclose(fp);
-	//IHS is derived. Now we compute EHS:
-	//For wv limit poker, we don't have to worry about EHS.
+	fclose(fp);*/
 	FILE *fp;
 	fp = fopen("output.txt","a+");
 	fprintf(fp,"This is from player %d:, betting round %d.\n", currentPlayer, state->round);
@@ -289,13 +290,20 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	{
 		fprintf(fp,"Pre-flop hand strength is: %d\n", bucket);
 	}
+	
 	if (state->round > 0)
 	{
-		fprintf(fp, "community cards are: %d, %d, %d, %d, %d\n", rankOfCard(state->boardCards[0]), rankOfCard(state->boardCards[1]), rankOfCard(state->boardCards[2]), rankOfCard(state->boardCards[3]), rankOfCard(state->boardCards[4]));
+		fprintf(fp, "community cards are: %d, %d, %d, ", rankOfCard(state->boardCards[0]), rankOfCard(state->boardCards[1]), rankOfCard(state->boardCards[2]));
+		if (state->round == 2) fprintf(fp, "%d, ", rankOfCard(state->boardCards[3]));
+		if (state->round == 3) fprintf(fp, "%d", rankOfCard(state->boardCards[4]));
+		fprintf(fp, "\n");
 		fprintf(fp,"Post-flop hand strength is: %d\n", bucket);
+		fprintf(fp,"Post-flop hand potential is %f\n", pPot);
+		fprintf(fp,"Post-flop EHS is %f\n", EHS);
+		fprintf(fp,"Post-flop IHS is %f\n", IHS);
 	}
 	fprintf(fp, "--------------------------------\n");
-	fclose(fp);*/
+	fclose(fp);
 	//Now we use heuristics to compute potentials
 	Strength returnStrength;
 	returnStrength.bucket = bucket;
