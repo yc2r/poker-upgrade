@@ -2,6 +2,7 @@
 #define OM_S_Cc 1		//
 #define OM_NS_MAX 5		//no showdown max opponent tightness
 #define OM_alpha 0.5	//combining the above two to get final opponent tightness
+#define OM_rounds 100	//number of rounds remembered
 
 ///////////////////////////
 

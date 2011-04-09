@@ -31,11 +31,12 @@ typedef struct{
 typedef struct{
 	float potOdds;			//pot odds: (the number of chips I need to put in the pot/total number of chips in the pot)/winning probability.
 	int bucket;				//five current hand strength bucket abstractions, return value from 1 to 5, with 1 being the worst hand.
+							//this actually already took into account of potentials. (EHS)
 	float potential;		//pPot in the 22nd reference paper in poker review paper..
 } Strength;
 
 int rankHand(Card* myCards, int numberOfCards);
 		     
-Strength computeHandStrength(State *state, int currentPlayer);
+Strength computeHandStrength(State *state, int currentPlayer, int round = -1);
 
 #endif

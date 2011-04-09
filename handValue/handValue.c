@@ -127,8 +127,9 @@ static int isCardChoiceLegal(int rank, int suite, Card* myCards, int maxNumberOf
 	return 0;
 }
 
-Strength computeHandStrength(State *state, int currentPlayer)
+Strength computeHandStrength(State *state, int currentPlayer, int round)
 {
+	if (round == -1) round = state->round;
 	unsigned bucket = 0;				//final return value
 	int i = 0;					//loop vars
 	int j = 0;
@@ -147,7 +148,7 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	int oppoValue = -1;
 	int handValueP = -1;		//used to compute potentials
 	int oppoValueP = -1;		
-	int remainingCards = 48 - state->round - 2;
+	int remainingCards = 48 - round - 2;
 	float IHS = 0.0;				//Immediate Hand Strength
 	float EHS = 0.0;
 	float pPot = 0.0;
@@ -166,7 +167,7 @@ Strength computeHandStrength(State *state, int currentPlayer)
 		myCards[i].rank = rankOfCard(state->holeCards[currentPlayer][i]);
 		myCards[i].suite = suitOfCard(state->holeCards[currentPlayer][i]);
 	}
-	if (state->round == 0)			//pre-flop
+	if (round == 0)			//pre-flop
 	{
 		IHS = computePreFlop(myCards);
 		if (IHS>0.94)
@@ -189,9 +190,9 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	}
 	else							//post-flop
 	{
-		maxNumberOfCards = 4 + state->round;		//total number of used cards (for opponent hole cards enumeration)
+		maxNumberOfCards = 4 + round;		//total number of used cards (for opponent hole cards enumeration)
 		//Assign the community cards to respective slots
-		for (i = 0; i < 2 + state->round; i++)
+		for (i = 0; i < 2 + round; i++)
 		{
 			myCards[i+2].rank = rankOfCard(state->boardCards[i]);
 			myCards[i+2].suite = suitOfCard(state->boardCards[i]);
@@ -237,17 +238,17 @@ Strength computeHandStrength(State *state, int currentPlayer)
 							previousWinning = 0;
 						}
 						//done computing IHS, now compute pPot.
-						if (state->round == 1||state->round == 2)		//flop or river. we need to compute potentials
+						if (round == 1||round == 2)		//flop or river. we need to compute potentials
 						{
 							for (m = 0; m < 13; m++){
 								for (n = 0; n < 4; n++){
 									if (isCardChoiceLegal(m,n,myCards,maxNumberOfCards)) continue;
 									if ((m==i)&&(n==j)) continue;				//Community cards cannot be the same cards as opponent's hole cards!
 									if ((m==k)&&(n==l)) continue;				//same as above!
-									myCards[4 + state->round].rank = m;
-									myCards[4 + state->round].suite = n;
-									oppoCards[4 + state->round].rank = m;
-									oppoCards[4 + state->round].suite = n;
+									myCards[4 + round].rank = m;
+									myCards[4 + round].suite = n;
+									oppoCards[4 + round].rank = m;
+									oppoCards[4 + round].suite = n;
 									//by the end of this loop we simulated the opponent cards.
 									handValueP = rankMyHand(myCards, maxNumberOfCards+1);
 									oppoValueP = rankMyHand(oppoCards, maxNumberOfCards+1);
@@ -299,18 +300,18 @@ Strength computeHandStrength(State *state, int currentPlayer)
 	returnStrength.potential = pPot;
 	FILE *fp;
 	fp = fopen("output.txt","a+");
-	fprintf(fp,"This is from player %d:, betting round %d.\n", currentPlayer, state->round);
+	fprintf(fp,"This is from player %d:, betting round %d.\n", currentPlayer, round);
 	fprintf(fp,"My first hole card is %d, suite is %d; Second hole card is %d, suite is %d\n", myCards[0].rank, myCards[0].suite, myCards[1].rank, myCards[1].suite);
-	if (state->round == 0)
+	if (round == 0)
 	{
 		fprintf(fp,"Pre-flop hand strength is: %d\n", bucket);
 	}
 	
-	if (state->round > 0)
+	if (round > 0)
 	{
 		fprintf(fp, "community cards are: %d of %d, %d of %d, %d of %d", rankOfCard(state->boardCards[0]), suitOfCard(state->boardCards[0]), rankOfCard(state->boardCards[1]), suitOfCard(state->boardCards[1]), rankOfCard(state->boardCards[2]), suitOfCard(state->boardCards[2]));
-		if (state->round == 2) fprintf(fp, ", %d of %d", rankOfCard(state->boardCards[3]), suitOfCard(state->boardCards[3]));
-		if (state->round == 3) fprintf(fp, ", %d of %d", rankOfCard(state->boardCards[4]), suitOfCard(state->boardCards[4]));
+		if (round == 2) fprintf(fp, ", %d of %d", rankOfCard(state->boardCards[3]), suitOfCard(state->boardCards[3]));
+		if (round == 3) fprintf(fp, ", %d of %d", rankOfCard(state->boardCards[4]), suitOfCard(state->boardCards[4]));
 		fprintf(fp, "\n");
 		fprintf(fp,"Post-flop hand strength is: %d\n", bucket);
 		fprintf(fp,"Post-flop lose2win is: %d\n", lose2win);

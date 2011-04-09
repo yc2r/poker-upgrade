@@ -94,7 +94,7 @@ int main( int argc, char **argv )
     exit( EXIT_FAILURE );
   }
   fflush( toServer );
-
+  Opponents *opp = (Opponents *) malloc(sizeof(opp));
   while( fgets( line, MAX_LINE_LEN, fromServer ) ) {
 
     /* ignore comments */
@@ -110,8 +110,8 @@ int main( int argc, char **argv )
     }
 
     if( stateFinished( &state.state ) ) {
-      /* ignore the game over message */
-
+	  //invoke opponent modeling recorder
+   	  updateModel(opp, game, &state.state); 
       continue;
     }
 
