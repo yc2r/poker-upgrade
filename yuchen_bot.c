@@ -13,8 +13,10 @@ Copyright (C) 2011 by the Computer Poker Research Group, University of Alberta
 #include <netinet/tcp.h>
 #include <getopt.h>
 #include "game.h"
-
+#include "MACRO.h"
 #include "handValue/handValue.h"
+#include "OM/OM.h"
+
 
 int main( int argc, char **argv )
 {
@@ -95,6 +97,17 @@ int main( int argc, char **argv )
   }
   fflush( toServer );
   Opponents *opp = (Opponents *) malloc(sizeof(opp));
+  int i,j,k;
+  for (i = 0; i < 2; i++)
+  for (j = 0; j < 4; j++)
+  {
+ 	 for (k = 0; k < OM_rounds; k++)
+ 	 {
+		 opp->om[i][j].history[k]=3;	//neutral attitude is the default value;
+		 opp->om[i][j].historyFold[k]=k%2;	//pseudo-random 50-50 folds.
+	 }
+	 opp->om[i][j].currentPointer = 0;
+  }
   while( fgets( line, MAX_LINE_LEN, fromServer ) ) {
 
     /* ignore comments */
@@ -111,7 +124,7 @@ int main( int argc, char **argv )
 
     if( stateFinished( &state.state ) ) {
 	  //invoke opponent modeling recorder
-   	  updateModel(opp, game, &state.state); 
+   	  updateModel(opp, game, &state.state, state.viewingPlayer); 
       continue;
     }
 
@@ -121,7 +134,7 @@ int main( int argc, char **argv )
       continue;
     }
 
-	Strength HS = computeHandStrength(&state.state,state.viewingPlayer);
+	Strength HS = computeHandStrength(&state.state, state.viewingPlayer, state.state.round);
 
 	/* add a colon (guaranteed to fit because we read a new-line in fgets) */
     line[ len ] = ':';

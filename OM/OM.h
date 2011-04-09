@@ -1,3 +1,6 @@
+#ifndef __OM_H
+#define __OM_H
+
 #include "../game.h"
 #include "../MACRO.h"
 
@@ -12,6 +15,7 @@ typedef struct{
 						//om[0][x] indicates the player sitting right to me
 						//om[1][x] indicates the player sitting left to me
 } Opponents;
+int getOpponentModel(Opponents *opp, int playerId, int round);
+void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer);
 
-void updateModel(Opponents *opp, Game *game, State *state);
-
+#endif

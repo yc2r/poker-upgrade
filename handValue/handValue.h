@@ -36,7 +36,6 @@ typedef struct{
 } Strength;
 
 int rankHand(Card* myCards, int numberOfCards);
-		     
-Strength computeHandStrength(State *state, int currentPlayer, int round = -1);
+Strength computeHandStrength(State *state, int currentPlayer, int round);
 
 #endif

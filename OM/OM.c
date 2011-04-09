@@ -1,19 +1,48 @@
 #include "OM.h"
-#include "../game.h"
+//#include "../game.h"
 #include "../MACRO.h"
 #include "../handValue/handValue.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-int getOpponentModel(int playerID, int round)
+int getOpponentModel(Opponents *opp, int playerID, int round)
 //round: 0=preflop 1=flop 2=turn 3=river
 {
-	
+	int i = 0;
+	int bins[5];
+	for (i = 0; i < 5; i++)
+	{
+		bins[i] = 0;
+	}
+	for (i = 0; i < OM_rounds; i++)
+	{
+		bins[opp->om[playerID][round].history[i]-1]++;
+	}
+	int returnValue;
+	int temp = -1;
+	for (i = 0; i < 5; i++)
+	{
+		if (bins[i]>temp) 
+		{
+			returnValue = i;
+			temp = bins[i];
+		}
+	}
+	int totalFolds = 0;
+	for (i = 0; i < OM_rounds; i++)
+	{
+		totalFolds += opp->om[playerID][round].historyFold[i];
+	}
+	if (totalFolds>80) return ((returnValue+2)<=5)?returnValue+2:5;
+	else if (totalFolds<20) return (returnValue>=1)?returnValue:1;
+	return returnValue+1;			//return value range is 1-5
 }
 
-void updateModel(Opponents *opp, Game *game, State *state)
+void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)
 {
 	//get general info
-	int player1Fold = (state->playerFolded[(state.viewingPlayer+1)%3] == 1)?1:0;
-	int player2Fold = (state->playerFolded[(state.viewingPlayer+2)%3] == 1)?1:0;
+	int player1Fold = (state->playerFolded[(viewingPlayer+1)%3] == 1)?1:0;
+	int player2Fold = (state->playerFolded[(viewingPlayer+2)%3] == 1)?1:0;
 	int dealerId = ((state->actingPlayer[0][0])+2)%3;
 	int numRaises = 0;
 	int numCalls = 0;
@@ -22,18 +51,19 @@ void updateModel(Opponents *opp, Game *game, State *state)
 	//player on the right:
 	if (!player1Fold)
 	{
-		int pos = (state.viewingPlayer+1) % 3;
+		int pos = (viewingPlayer+1) % 3;
 		int round = 0;
-		Strength oppoStr = computeHandStrength(state, pos, round);		//got oppo pre-flop strength
+		Strength oppoStr;
+		oppoStr = computeHandStrength(state, pos, round);		//got oppo pre-flop strength
 		for (i = 0; i < MAX_NUM_ACTIONS; i++)
 		{
 			if (state->actingPlayer[0][i] == pos)
 			{
-				if (state->action[0][i] == 2)
+				if (state->action[0][i].type == 2)
 				{
 					numRaises ++;
 				}
-				if (state->action[0][i] == 1)
+				if (state->action[0][i].type == 1)
 				{
 					numCalls ++;
 				}
@@ -83,20 +113,22 @@ void updateModel(Opponents *opp, Game *game, State *state)
 	}
 	//////////////////////////////////////////
 	//player on the left:
+	numRaises = 0;
+	numCalls = 0;
 	if (!player2Fold)
 	{
-		int pos = (state.viewingPlayer+2) % 3;
+		int pos = (viewingPlayer+2) % 3;
 		int round = 0;
 		Strength oppoStr = computeHandStrength(state, pos, round);		//got oppo pre-flop strength
 		for (i = 0; i < MAX_NUM_ACTIONS; i++)
 		{
 			if (state->actingPlayer[0][i] == pos)
 			{
-				if (state->action[0][i] == 2)
+				if (state->action[0][i].type == 2)
 				{
 					numRaises ++;
 				}
-				if (state->action[0][i] == 1)
+				if (state->action[0][i].type == 1)
 				{
 					numCalls ++;
 				}
@@ -142,27 +174,31 @@ void updateModel(Opponents *opp, Game *game, State *state)
 	//////////////////////
 	//post-flop
 	int j = 0;
+	int numRaised = 0;		//number of time raised by any player
 	for (i=1; i<4; i++)
 	{
+		numRaises = 0;
+		numCalls = 0;
+		int round = i;
 		//player on the right:
 		if (!player1Fold)
 		{
-			int pos = (state.viewingPlayer+1) % 3;
-			int round = i;
+			int pos = (viewingPlayer+1) % 3;
 			Strength oppoStr = computeHandStrength(state, pos, round);		//got oppo pre-flop strength
 			for (j = 0; j < MAX_NUM_ACTIONS; j++)
 			{
 				if (state->actingPlayer[i][j] == pos)
 				{
-					if (state->action[i][j] == 2)
+					if (state->action[i][j].type == 2)
 					{
-						numRaises ++;
+						numRaises ++;		//number of time raised by this player
 					}
-					if (state->action[i][j] == 1)
+					if (state->action[i][j].type == 1)
 					{
 						numCalls ++;
 					}
 				}
+				if (state->action[i][j].type == 2) numRaised ++;
 			}
 			if (oppoStr.bucket == 5)
 			{
@@ -181,13 +217,14 @@ void updateModel(Opponents *opp, Game *game, State *state)
 			}
 			if (oppoStr.bucket==2) 
 			{
-				if (numRaises>0) opp->om[0][round].history[opp->om[0][round].currentPointer] = 2;		//opponent raising when he's got weak hand. He's very loose
+				if (numRaises>0) opp->om[0][round].history[opp->om[0][round].currentPointer] = 1;		//opponent raising when he's got weak hand. He's very loose
+				else if (numRaised>0) opp->om[0][round].history[opp->om[0][round].currentPointer] = 2;	//oppponent calling with a lower hand. He's kinda loose
 				else opp->om[0][round].history[opp->om[0][round].currentPointer] = 3;
 			}
 			if (oppoStr.bucket==1)
 			{
-				if (numRaises>0) opp->om[0][round].history[opp->om[0][round].currentPointer] = 1;	
-				else opp->om[0][round].history[opp->om[0][round].currentPointer] = 3;
+				if (numRaised==0) opp->om[0][round].history[opp->om[0][round].currentPointer] = 3;		//Unless everybody checks, this player is considered ultra-aggresive/loose.
+				else opp->om[0][round].history[opp->om[0][round].currentPointer] = 1;
 			}
 			opp->om[0][round].historyFold[opp->om[0][round].currentPointer] = 0;
 			opp->om[0][round].currentPointer = (opp->om[0][round].currentPointer+1)%100;
@@ -200,24 +237,26 @@ void updateModel(Opponents *opp, Game *game, State *state)
 		}
 		//////////////////////////////////////////
 		//player on the left:
-		if (!player1Fold)
+		numRaises = 0;
+		numCalls = 0;
+		if (!player2Fold)
 		{
-			int pos = (state.viewingPlayer+2) % 3;
-			int round = i;
+			int pos = (viewingPlayer+2) % 3;
 			Strength oppoStr = computeHandStrength(state, pos, round);		//got oppo pre-flop strength
 			for (j = 0; j < MAX_NUM_ACTIONS; j++)
 			{
 				if (state->actingPlayer[i][j] == pos)
 				{
-					if (state->action[i][j] == 2)
+					if (state->action[i][j].type == 2)
 					{
 						numRaises ++;
 					}
-					if (state->action[i][j] == 1)
+					if (state->action[i][j].type == 1)
 					{
 						numCalls ++;
 					}
 				}
+				if (state->action[i][j].type == 2) numRaised ++;
 			}
 			if (oppoStr.bucket == 5)
 			{
@@ -236,13 +275,14 @@ void updateModel(Opponents *opp, Game *game, State *state)
 			}
 			if (oppoStr.bucket==2) 
 			{
-				if (numRaises>0) opp->om[1][round].history[opp->om[1][round].currentPointer] = 2;		//opponent raising when he's got weak hand. He's very loose
+				if (numRaises>0) opp->om[1][round].history[opp->om[1][round].currentPointer] = 1;		//opponent raising when he's got weak hand. He's very loose
+				else if (numRaised>0) opp->om[1][round].history[opp->om[1][round].currentPointer] = 2;	//oppponent calling with a lower hand. He's kinda loose
 				else opp->om[1][round].history[opp->om[1][round].currentPointer] = 3;
 			}
 			if (oppoStr.bucket==1)
 			{
-				if (numRaises>0) opp->om[1][round].history[opp->om[1][round].currentPointer] = 1;	
-				else opp->om[1][round].history[opp->om[1][round].currentPointer] = 3;
+				if (numRaised==0) opp->om[1][round].history[opp->om[1][round].currentPointer] = 3;		//Unless everybody checks, this player is considered ultra-aggresive/loose.
+				else opp->om[1][round].history[opp->om[1][round].currentPointer] = 1;
 			}
 			opp->om[1][round].historyFold[opp->om[1][round].currentPointer] = 0;
 			opp->om[1][round].currentPointer = (opp->om[1][round].currentPointer+1)%100;

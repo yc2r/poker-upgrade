@@ -121,7 +121,6 @@ typedef struct {
   uint8_t viewingPlayer;
 } MatchState;
 
-
 /* returns a game structure, or NULL on failure */
 Game *readGame( FILE *file );
 
