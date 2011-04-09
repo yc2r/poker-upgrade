@@ -125,7 +125,8 @@ int main( int argc, char **argv )
     if( stateFinished( &state.state ) ) {
 	  //invoke opponent modeling recorder
    	  updateModel(opp, game, &state.state, state.viewingPlayer); 
-      continue;
+      fprintf( stderr, "model is:%d, %d\n", opp->om[0][0].history[0], opp->om[0][1].history[0]);
+	  continue;
     }
 
     if( currentPlayer( game, &state.state ) != state.viewingPlayer ) {
@@ -134,7 +135,7 @@ int main( int argc, char **argv )
       continue;
     }
 
-	Strength HS = computeHandStrength(&state.state, state.viewingPlayer, state.state.round);
+	//Strength HS = computeHandStrength(&state.state, state.viewingPlayer, state.state.round);
 
 	/* add a colon (guaranteed to fit because we read a new-line in fgets) */
     line[ len ] = ':';

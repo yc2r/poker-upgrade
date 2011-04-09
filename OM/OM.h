@@ -1,7 +1,7 @@
 #ifndef __OM_H
 #define __OM_H
 
-#include "../game.h"
+#include "../handValue/handValue.h"
 #include "../MACRO.h"
 
 typedef struct {

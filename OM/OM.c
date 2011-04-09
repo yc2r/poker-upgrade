@@ -1,7 +1,4 @@
 #include "OM.h"
-//#include "../game.h"
-#include "../MACRO.h"
-#include "../handValue/handValue.h"
 #include <stdio.h>
 #include <stdlib.h>
 
