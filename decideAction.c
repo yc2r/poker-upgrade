@@ -22,7 +22,10 @@ int decideAction(State* state, int position,int selfID, int player1ID, int playe
 	int player1Type = getplayerType(round,player1ID);
 	int player2Type = getplayerType(round,player2ID);
 	int revisedHS;
-	int player1Raise,player1Call,player2Raise,player2Call;
+	int player1Raise = 0;
+	int player1Call = 0;
+	int player2Raise = 0;
+	int player2Call = 0;
 	int isFirstaction;					//when it is 1, dealerpenalty will be considered, otherwise not
 	double randNumber;
 	int i,j;
