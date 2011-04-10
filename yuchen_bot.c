@@ -96,7 +96,7 @@ int main( int argc, char **argv )
     exit( EXIT_FAILURE );
   }
   fflush( toServer );
-  Opponents *opp = (Opponents *) malloc(sizeof(opp));
+  Opponents *opp = (Opponents *) malloc(sizeof(Opponents));
   int i,j,k;
   for (i = 0; i < 2; i++)
   for (j = 0; j < 4; j++)

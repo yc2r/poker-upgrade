@@ -40,7 +40,7 @@ void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)
 	//get general info
 	int player1Fold = (state->playerFolded[(viewingPlayer+1)%3] == 1)?1:0;
 	int player2Fold = (state->playerFolded[(viewingPlayer+2)%3] == 1)?1:0;
-	int dealerId = ((state->actingPlayer[0][0])+2)%3;
+	int dealerId = state->actingPlayer[0][0];
 	int numRaises = 0;
 	int numCalls = 0;
 	int i = 0;
@@ -50,8 +50,8 @@ void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)
 	{
 		int pos = (viewingPlayer+1) % 3;
 		int round = 0;
-		Strength oppoStr;
-		oppoStr = computeHandStrength(state, pos, round);		//got oppo pre-flop strength
+		Strength *oppoStr = (Strength*) malloc(sizeof(oppoStr));
+		computeHandStrength(state, pos, round, oppoStr);		//got oppo pre-flop strength
 		for (i = 0; i < MAX_NUM_ACTIONS; i++)
 		{
 			if (state->actingPlayer[0][i] == pos)
@@ -71,28 +71,28 @@ void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)
 		int temp = norm_raiserate%10-5;
 		norm_raiserate = norm_raiserate / 10;
 		norm_raiserate = (temp>0)?norm_raiserate+1:norm_raiserate;	//si she wu ru*/
-		if (oppoStr.bucket == 5)
+		if (oppoStr->bucket == 5)
 		{
 			if (numCalls>1) opp->om[0][0].history[opp->om[0][0].currentPointer] = 5;
 			else opp->om[0][0].history[opp->om[0][0].currentPointer] = 3;	
 		}
-		if (oppoStr.bucket == 4)
+		if (oppoStr->bucket == 4)
 		{
 			if (numRaises == 0) opp->om[0][0].history[opp->om[0][0].currentPointer] = 4;
 			else opp->om[0][0].history[opp->om[0][0].currentPointer] = 3;
 		}
-		if (oppoStr.bucket == 3)
+		if (oppoStr->bucket == 3)
 		{
 			if ((numCalls == 1)&&(numRaises>1)) opp->om[0][0].history[opp->om[0][0].currentPointer] = 2;	
 			else opp->om[0][0].history[opp->om[0][0].currentPointer] = 3;	
 		}
-		if (oppoStr.bucket==2) 
+		if (oppoStr->bucket==2) 
 		{
 			if (dealerId != pos) opp->om[0][0].history[opp->om[0][0].currentPointer] = 3;		//protecting blinds.
 			else opp->om[0][0].history[opp->om[0][0].currentPointer] = 2;	//dealer plays a sub-optimal hand 
 			if (numRaises>0) opp->om[0][0].history[opp->om[0][0].currentPointer] = 1;		//opponent raising when he's got weak hand. He's very loose
 		}
-		if (oppoStr.bucket==1)
+		if (oppoStr->bucket==1)
 		{
 			if (dealerId == (pos+2)%3) opp->om[0][0].history[opp->om[0][0].currentPointer] = 2;
 			else if (dealerId == (pos+1)%3) opp->om[0][0].history[opp->om[0][0].currentPointer] = 3;
@@ -116,7 +116,8 @@ void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)
 	{
 		int pos = (viewingPlayer+2) % 3;
 		int round = 0;
-		Strength oppoStr = computeHandStrength(state, pos, round);		//got oppo pre-flop strength
+		Strength *oppoStr = (Strength*) malloc(sizeof(oppoStr));
+		computeHandStrength(state, pos, round, oppoStr);		//got oppo pre-flop strength
 		for (i = 0; i < MAX_NUM_ACTIONS; i++)
 		{
 			if (state->actingPlayer[0][i] == pos)
@@ -131,28 +132,28 @@ void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)
 				}
 			}
 		}
-		if (oppoStr.bucket == 5)
+		if (oppoStr->bucket == 5)
 		{
 			if (numCalls>1) opp->om[1][0].history[opp->om[1][0].currentPointer] = 5;
 			else opp->om[1][0].history[opp->om[1][0].currentPointer] = 3;	
 		}
-		if (oppoStr.bucket == 4)
+		if (oppoStr->bucket == 4)
 		{
 			if (numRaises == 0) opp->om[1][0].history[opp->om[1][0].currentPointer] = 4;
 			else opp->om[1][0].history[opp->om[1][0].currentPointer] = 3;
 		}
-		if (oppoStr.bucket == 3)
+		if (oppoStr->bucket == 3)
 		{
 			if ((numCalls == 1)&&(numRaises>1)) opp->om[1][0].history[opp->om[1][0].currentPointer] = 2;	
 			else opp->om[1][0].history[opp->om[1][0].currentPointer] = 3;	
 		}
-		if (oppoStr.bucket==2) 
+		if (oppoStr->bucket==2) 
 		{
 			if (dealerId != pos) opp->om[1][0].history[opp->om[1][0].currentPointer] = 3;		//protecting blinds.
 			else opp->om[1][0].history[opp->om[1][0].currentPointer] = 2;	//dealer plays a sub-optimal hand 
 			if (numRaises>0) opp->om[1][0].history[opp->om[1][0].currentPointer] = 1;		//opponent raising when he's got weak hand. He's very loose
 		}
-		if (oppoStr.bucket==1)
+		if (oppoStr->bucket==1)
 		{
 			if (dealerId == (pos+2)%3) opp->om[1][0].history[opp->om[1][0].currentPointer] = 2;
 			else if (dealerId == (pos+1)%3) opp->om[1][0].history[opp->om[1][0].currentPointer] = 3;
@@ -181,7 +182,8 @@ void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)
 		if (!player1Fold)
 		{
 			int pos = (viewingPlayer+1) % 3;
-			Strength oppoStr = computeHandStrength(state, pos, round);		//got oppo pre-flop strength
+			Strength *oppoStr = (Strength*) malloc(sizeof(oppoStr));
+			computeHandStrength(state, pos, round, oppoStr);		//got oppo pre-flop strength
 			for (j = 0; j < MAX_NUM_ACTIONS; j++)
 			{
 				if (state->actingPlayer[i][j] == pos)
@@ -197,28 +199,28 @@ void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)
 				}
 				if (state->action[i][j].type == 2) numRaised ++;
 			}
-			if (oppoStr.bucket == 5)
+			if (oppoStr->bucket == 5)
 			{
 				if (numCalls>1) opp->om[0][round].history[opp->om[0][round].currentPointer] = 5;
 				else opp->om[0][round].history[opp->om[0][round].currentPointer] = 3;	
 			}
-			if (oppoStr.bucket == 4)
+			if (oppoStr->bucket == 4)
 			{
 				if (numRaises == 0) opp->om[0][round].history[opp->om[0][round].currentPointer] = 4;
 				else opp->om[0][round].history[opp->om[0][round].currentPointer] = 3;
 			}
-			if (oppoStr.bucket == 3)
+			if (oppoStr->bucket == 3)
 			{
 				if ((numCalls == 1)&&(numRaises>1)) opp->om[0][round].history[opp->om[0][round].currentPointer] = 2;	
 				else opp->om[0][round].history[opp->om[0][round].currentPointer] = 3;	
 			}
-			if (oppoStr.bucket==2) 
+			if (oppoStr->bucket==2) 
 			{
 				if (numRaises>0) opp->om[0][round].history[opp->om[0][round].currentPointer] = 1;		//opponent raising when he's got weak hand. He's very loose
 				else if (numRaised>0) opp->om[0][round].history[opp->om[0][round].currentPointer] = 2;	//oppponent calling with a lower hand. He's kinda loose
 				else opp->om[0][round].history[opp->om[0][round].currentPointer] = 3;
 			}
-			if (oppoStr.bucket==1)
+			if (oppoStr->bucket==1)
 			{
 				if (numRaised==0) opp->om[0][round].history[opp->om[0][round].currentPointer] = 3;		//Unless everybody checks, this player is considered ultra-aggresive/loose.
 				else opp->om[0][round].history[opp->om[0][round].currentPointer] = 1;
@@ -239,7 +241,8 @@ void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)
 		if (!player2Fold)
 		{
 			int pos = (viewingPlayer+2) % 3;
-			Strength oppoStr = computeHandStrength(state, pos, round);		//got oppo pre-flop strength
+			Strength *oppoStr = (Strength*) malloc(sizeof(oppoStr));
+			computeHandStrength(state, pos, round, oppoStr);		//got oppo pre-flop strength
 			for (j = 0; j < MAX_NUM_ACTIONS; j++)
 			{
 				if (state->actingPlayer[i][j] == pos)
@@ -255,28 +258,28 @@ void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)
 				}
 				if (state->action[i][j].type == 2) numRaised ++;
 			}
-			if (oppoStr.bucket == 5)
+			if (oppoStr->bucket == 5)
 			{
 				if (numCalls>1) opp->om[1][round].history[opp->om[1][round].currentPointer] = 5;
 				else opp->om[1][round].history[opp->om[1][round].currentPointer] = 3;	
 			}
-			if (oppoStr.bucket == 4)
+			if (oppoStr->bucket == 4)
 			{
 				if (numRaises == 0) opp->om[1][round].history[opp->om[1][round].currentPointer] = 4;
 				else opp->om[1][round].history[opp->om[1][round].currentPointer] = 3;
 			}
-			if (oppoStr.bucket == 3)
+			if (oppoStr->bucket == 3)
 			{
 				if ((numCalls == 1)&&(numRaises>1)) opp->om[1][round].history[opp->om[1][round].currentPointer] = 2;	
 				else opp->om[1][round].history[opp->om[1][round].currentPointer] = 3;	
 			}
-			if (oppoStr.bucket==2) 
+			if (oppoStr->bucket==2) 
 			{
 				if (numRaises>0) opp->om[1][round].history[opp->om[1][round].currentPointer] = 1;		//opponent raising when he's got weak hand. He's very loose
 				else if (numRaised>0) opp->om[1][round].history[opp->om[1][round].currentPointer] = 2;	//oppponent calling with a lower hand. He's kinda loose
 				else opp->om[1][round].history[opp->om[1][round].currentPointer] = 3;
 			}
-			if (oppoStr.bucket==1)
+			if (oppoStr->bucket==1)
 			{
 				if (numRaised==0) opp->om[1][round].history[opp->om[1][round].currentPointer] = 3;		//Unless everybody checks, this player is considered ultra-aggresive/loose.
 				else opp->om[1][round].history[opp->om[1][round].currentPointer] = 1;
