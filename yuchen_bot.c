@@ -98,6 +98,7 @@ int main( int argc, char **argv )
   fflush( toServer );
   Opponents *opp = (Opponents *) malloc(sizeof(Opponents));
   int i,j,k;
+  int l=0;
   for (i = 0; i < 2; i++)
   for (j = 0; j < 4; j++)
   {
@@ -125,7 +126,9 @@ int main( int argc, char **argv )
     if( stateFinished( &state.state ) ) {
 	  //invoke opponent modeling recorder
    	  updateModel(opp, game, &state.state, state.viewingPlayer); 
-      fprintf( stderr, "model is:%d, %d\n", opp->om[0][0].history[0], opp->om[0][1].history[0]);
+      fprintf( stderr, "model is:%d, %d\n", opp->om[0][0].history[l], opp->om[0][1].history[l]);
+	  l++;
+	  l%=100;
 	  continue;
     }
 

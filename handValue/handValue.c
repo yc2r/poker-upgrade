@@ -21,16 +21,25 @@
 char cardToChar (int rank)
 {
 	//char *ret = (char *) malloc(sizeof(char)*100);
-	char ret[2];
 	char temp;
-	if ((rank>0)&&(rank < 10)) sprintf(ret, "%d", rank);
+	if (rank == 2) temp = '2';
+	else if (rank == 3) temp = '3';
+	else if (rank == 4) temp = '4';
+	else if (rank == 5) temp = '5';
+	else if (rank == 6) temp = '6';
+	else if (rank == 7) temp = '7';
+	else if (rank == 8) temp = '8';
+	else if (rank == 9) temp = '9';
 	else if (rank == 10) temp = 'T';
 	else if (rank == 11) temp = 'J';
 	else if (rank == 12) temp = 'Q';
 	else if (rank == 13) temp = 'K';
 	else if (rank == 14) temp = 'A';
-	temp = ret[0];
-	//free(ret);
+	else 
+	{
+		printf("Error parsing card rank!\n");
+		exit(-1);
+	}
 	return temp;
 }
 
@@ -41,7 +50,7 @@ float computePreFlop(Card *myCards)
 	int suited = (myCards[0].suite == myCards[1].suite);
 	//int pair = (myCards[0].rank == myCards[1].rank);
 	//char *cards = (char *) malloc(sizeof(char)*4);
-	char cards[3];
+	char cards[4];
 	float ret = 0.0;
 	//Represent the cards using string.
 	if (myCards[0].rank < myCards[1].rank)		//sort the hands
@@ -56,53 +65,48 @@ float computePreFlop(Card *myCards)
 		cards[1] = cardToChar(myCards[1].rank+2);
 		cards[2] = suited ? 's' : 'o';
 	}
+	cards[3]='\0';
 	//Group1 hands:
 	if ((strcmp(cards,"AAo"))==0||(strcmp(cards,"KKo"))==0||(strcmp(cards,"QQo"))==0||(strcmp(cards,"JJo"))==0||(strcmp(cards,"AKs"))==0)
 	{
 		ret = 1.0;		//maximum group
 	}
 	//Group2 hands:
-	if ((strcmp(cards,"TTo"))==0||(strcmp(cards,"AQs"))==0||(strcmp(cards,"AJs"))==0||(strcmp(cards,"KQs"))==0||(strcmp(cards,"AKo"))==0)
+	else if ((strcmp(cards,"TTo"))==0||(strcmp(cards,"AQs"))==0||(strcmp(cards,"AJs"))==0||(strcmp(cards,"KQs"))==0||(strcmp(cards,"AKo"))==0)
 	{
 		ret = 0.95;
 	}
 	//Group3 hands:
-	if ((strcmp(cards,"99o"))==0||(strcmp(cards,"JTs"))==0||(strcmp(cards,"QJs"))==0||(strcmp(cards,"KJs"))==0||(strcmp(cards,"ATs"))==0||(strcmp(cards,"ATo"))==0)
+	else if ((strcmp(cards,"99o"))==0||(strcmp(cards,"JTs"))==0||(strcmp(cards,"QJs"))==0||(strcmp(cards,"KJs"))==0||(strcmp(cards,"ATs"))==0||(strcmp(cards,"ATo"))==0)
 	{
 		ret = 0.9;
 	}
 	//Group4 hands:
-	if ((strcmp(cards,"T9s"))==0||(strcmp(cards,"KQo"))==0||(strcmp(cards,"88o"))==0||(strcmp(cards,"QTs"))==0||(strcmp(cards,"98s"))==0||(strcmp(cards,"J9s"))==0||(strcmp(cards,"AJo"))==0||(strcmp(cards,"KTs"))==0)
+	else if ((strcmp(cards,"T9s"))==0||(strcmp(cards,"KQo"))==0||(strcmp(cards,"88o"))==0||(strcmp(cards,"QTs"))==0||(strcmp(cards,"98s"))==0||(strcmp(cards,"J9s"))==0||(strcmp(cards,"AJo"))==0||(strcmp(cards,"KTs"))==0)
 	{
 		ret = 0.82;
 	}
 	//Group5 hands:
-	if ((strcmp(cards,"77o"))==0||(strcmp(cards,"87s"))==0||(strcmp(cards,"Q9s"))==0||(strcmp(cards,"T8s"))==0||(strcmp(cards,"KJo"))==0||(strcmp(cards,"QJo"))==0||(strcmp(cards,"JTo"))==0||(strcmp(cards,"76s"))==0 \
-	||(strcmp(cards,"97s"))==0||(strcmp(cards,"A9s"))==0||(strcmp(cards,"A8s"))==0||(strcmp(cards,"A7s"))==0||(strcmp(cards,"A6s"))==0||(strcmp(cards,"A5s"))==0||(strcmp(cards,"A4s"))==0||(strcmp(cards,"A3s"))==0|| \
-	(strcmp(cards,"A2s"))==0||(strcmp(cards,"65s"))==0)
+	else if ((strcmp(cards,"77o"))==0||(strcmp(cards,"87s"))==0||(strcmp(cards,"Q9s"))==0||(strcmp(cards,"T8s"))==0||(strcmp(cards,"KJo"))==0||(strcmp(cards,"QJo"))==0||(strcmp(cards,"JTo"))==0||(strcmp(cards,"76s"))==0||(strcmp(cards,"97s"))==0||(strcmp(cards,"A9s"))==0||(strcmp(cards,"A8s"))==0||(strcmp(cards,"A7s"))==0||(strcmp(cards,"A6s"))==0||(strcmp(cards,"A5s"))==0||(strcmp(cards,"A4s"))==0||(strcmp(cards,"A3s"))==0||(strcmp(cards,"A2s"))==0||(strcmp(cards,"65s"))==0)
 	{
 		ret = 0.75;
 	}
 	//Group6 hands:
-	if ((strcmp(cards,"66o"))==0||(strcmp(cards,"ATo"))==0||(strcmp(cards,"55o"))==0||(strcmp(cards,"86s"))==0||(strcmp(cards,"KTo"))==0||(strcmp(cards,"QTo"))==0||(strcmp(cards,"54s"))==0||(strcmp(cards,"K9s"))==0 \
-	||(strcmp(cards,"J8s"))==0)
+	else if ((strcmp(cards,"66o"))==0||(strcmp(cards,"ATo"))==0||(strcmp(cards,"55o"))==0||(strcmp(cards,"86s"))==0||(strcmp(cards,"KTo"))==0||(strcmp(cards,"QTo"))==0||(strcmp(cards,"54s"))==0||(strcmp(cards,"K9s"))==0||(strcmp(cards,"J8s"))==0)
 	{
 		ret = 0.68;
 	}
 	//Group7 hands:
-	if ((strcmp(cards,"44o"))==0||(strcmp(cards,"J9o"))==0||(strcmp(cards,"43s"))==0||(strcmp(cards,"75s"))==0||(strcmp(cards,"T9o"))==0||(strcmp(cards,"33o"))==0||(strcmp(cards,"98o"))==0||(strcmp(cards,"64s"))==0 \
-	||(strcmp(cards,"22o"))==0||(strcmp(cards,"Q8s"))==0||(strcmp(cards,"K8s"))==0||(strcmp(cards,"K7s"))==0||(strcmp(cards,"K6s"))==0||(strcmp(cards,"K5s"))==0||(strcmp(cards,"K4s"))==0||(strcmp(cards,"K3s"))==0|| \
-	(strcmp(cards,"K2s"))==0)
+	else if ((strcmp(cards,"44o"))==0||(strcmp(cards,"J9o"))==0||(strcmp(cards,"43s"))==0||(strcmp(cards,"75s"))==0||(strcmp(cards,"T9o"))==0||(strcmp(cards,"33o"))==0||(strcmp(cards,"98o"))==0||(strcmp(cards,"64s"))==0||(strcmp(cards,"22o"))==0||(strcmp(cards,"Q8s"))==0||(strcmp(cards,"K8s"))==0||(strcmp(cards,"K7s"))==0||(strcmp(cards,"K6s"))==0||(strcmp(cards,"K5s"))==0||(strcmp(cards,"K4s"))==0||(strcmp(cards,"K3s"))==0||(strcmp(cards,"K2s"))==0)
 	{
 		ret = 0.6;
 	}
 	//Group8 hands:
-	if ((strcmp(cards,"87o"))==0||(strcmp(cards,"53s"))==0||(strcmp(cards,"A9o"))==0||(strcmp(cards,"Q9o"))==0||(strcmp(cards,"76o"))==0||(strcmp(cards,"42s"))==0||(strcmp(cards,"32s"))==0||(strcmp(cards,"96s"))==0 \
-	||(strcmp(cards,"85s"))==0||(strcmp(cards,"J8o"))==0||(strcmp(cards,"J7s"))==0||(strcmp(cards,"65o"))==0||(strcmp(cards,"54o"))==0||(strcmp(cards,"74s"))==0||(strcmp(cards,"K9o"))==0||(strcmp(cards,"T8o"))==0)
+	else if ((strcmp(cards,"87o"))==0||(strcmp(cards,"53s"))==0||(strcmp(cards,"A9o"))==0||(strcmp(cards,"Q9o"))==0||(strcmp(cards,"76o"))==0||(strcmp(cards,"42s"))==0||(strcmp(cards,"32s"))==0||(strcmp(cards,"96s"))==0||(strcmp(cards,"85s"))==0||(strcmp(cards,"J8o"))==0||(strcmp(cards,"J7s"))==0||(strcmp(cards,"65o"))==0||(strcmp(cards,"54o"))==0||(strcmp(cards,"74s"))==0||(strcmp(cards,"K9o"))==0||(strcmp(cards,"T8o"))==0)
 	{
 		ret = 0.51;
 	}
-	if ((strcmp(cards,"72o"))==0||(strcmp(cards,"62o"))==0||(strcmp(cards,"82o"))==0||(strcmp(cards,"83o"))==0||(strcmp(cards,"92o"))==0||(strcmp(cards,"62s"))==0||(strcmp(cards,"72s"))==0||(strcmp(cards,"82s"))==0||(strcmp(cards,"92s"))==0||(strcmp(cards,"83s"))==0){
+	else if ((strcmp(cards,"72o"))==0||(strcmp(cards,"62o"))==0||(strcmp(cards,"82o"))==0||(strcmp(cards,"83o"))==0||(strcmp(cards,"92o"))==0||(strcmp(cards,"62s"))==0||(strcmp(cards,"72s"))==0||(strcmp(cards,"82s"))==0||(strcmp(cards,"92s"))==0||(strcmp(cards,"83s"))==0){
 		ret = 0.1;
 	}
 	else ret = 0.3;
