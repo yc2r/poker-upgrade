@@ -1,6 +1,9 @@
 #ifndef __OM_H
 #define __OM_H
 
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "../handValue/handValue.h"
 #include "../MACRO.h"
 

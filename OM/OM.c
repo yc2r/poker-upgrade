@@ -1,12 +1,10 @@
 #include "OM.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 int getOpponentModel(Opponents *opp, int playerID, int round)
 //round: 0=preflop 1=flop 2=turn 3=river
 {
 	int i = 0;
-	int bins[5];
+	/*int bins[5];
 	for (i = 0; i < 5; i++)
 	{
 		bins[i] = 0;
@@ -32,7 +30,22 @@ int getOpponentModel(Opponents *opp, int playerID, int round)
 	}
 	if (totalFolds>80) return ((returnValue+2)<=5)?returnValue+2:5;
 	else if (totalFolds<20) return (returnValue>=1)?returnValue:1;
-	return returnValue+1;			//return value range is 1-5
+	return returnValue+1;			//return value range is 1-5*/
+	int total = 0;
+	for (i=0;i<OM_rounds;i++)
+	{
+		total+=opp->om[playerID][round].history[i];
+	}
+	int totalFolds = 0;
+	for (i = 0; i < OM_rounds; i++)
+	{
+		totalFolds += opp->om[playerID][round].historyFold[i];
+	}
+	int temp = total*10/OM_rounds;
+	int avg = temp/10+(temp%10>=5)?1:0;
+	if (totalFolds>80) return ((avg+2)<=5)?avg+2:5;
+	else if (totalFolds<20) return (avg>=1)?avg:1;
+	return avg+1;			//return value range is 1-5*/
 }
 
 void updateModel(Opponents *opp, Game *game, State *state, int viewingPlayer)

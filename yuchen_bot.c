@@ -15,6 +15,7 @@ Copyright (C) 2011 by the Computer Poker Research Group, University of Alberta
 #include "game.h"
 #include "MACRO.h"
 #include "handValue/handValue.h"
+#include "decideAction.h"
 #include "OM/OM.h"
 
 
@@ -143,7 +144,7 @@ int main( int argc, char **argv )
 	/* add a colon (guaranteed to fit because we read a new-line in fgets) */
     line[ len ] = ':';
     ++len;
-
+#if 0
     if( ( random() % 2 ) && raiseIsValid( game, &state.state, &min, &max ) ) {
       /* raise */
     //if ((IHS > 0.6) && raiseIsValid(game, &state.state, &min, &max)) {  
@@ -155,8 +156,27 @@ int main( int argc, char **argv )
       action.type = call;
       action.size = 0;
     }
-
-    if( !isValidAction( game, &state.state, 0, &action ) ) {
+#endif
+	int position = (state.viewingPlayer+3-state.state.actingPlayer[0][0])%3;
+	Strength* str = (Strength*)(malloc(sizeof(Strength)));
+	computeHandStrength(&state.state, state.viewingPlayer, state.state.round, str);
+	int todo = decideAction(opp, &state.state, position, state.viewingPlayer, (state.viewingPlayer+1)%3, (state.viewingPlayer+2)%3, str->bucket-1); 
+	if ((todo == 2)&&raiseIsValid( game, &state.state, &min, &max )) 
+	{
+		action.type = raise;
+      	action.size = min + random() % ( max - min + 1 );
+	}
+	else if (todo == 1)
+	{
+		action.type = call;
+		action.size = 0;
+	}
+	else if (todo == 0)
+	{
+		action.type = fold;
+		action.size = 0;
+	}
+	if( !isValidAction( game, &state.state, 0, &action ) ) {
 
       fprintf( stderr, "ERROR: chose an invalid action\n" );
       exit( EXIT_FAILURE );

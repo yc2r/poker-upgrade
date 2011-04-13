@@ -13,8 +13,8 @@ dealer: game.c game.h evalHandTables rng.c rng.h dealer.c
 example_player: game.c game.h evalHandTables rng.c rng.h example_player.c 
 	$(CC) $(CFLAGS) -o $@ game.c rng.c example_player.c 
 
-yuchen_bot: game.c game.h evalHandTables rng.c rng.h handValue/handValue.h handValue/handValue.c OM/OM.h OM/OM.c yuchen_bot.c 
-	$(CC) $(CFLAGS) -o $@ game.c rng.c yuchen_bot.c handValue/handValue.c OM/OM.c
+yuchen_bot: game.c game.h evalHandTables rng.c rng.h handValue/handValue.h handValue/handValue.c OM/OM.h OM/OM.c decideAction.h decideAction.c yuchen_bot.c 
+	$(CC) $(CFLAGS) -o $@ game.c rng.c yuchen_bot.c handValue/handValue.c OM/OM.c decideAction.c
 	
 
 #improved_player: game.c game.h evalHandTables rng.c rng.h improved_player.c handValue/handValue.h handValue/handValue.c
